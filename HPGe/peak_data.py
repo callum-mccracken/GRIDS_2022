@@ -1,14 +1,19 @@
+"""Module for storing known data about peaks."""
 from dataclasses import dataclass
 
 
 @dataclass
 class Source():
+    """Class for storing peak energies and intensities (as lists)."""
+
     peaks_kev: list  # energies in keV
     intensities: list
 
 
 @dataclass
 class KnownPeaks:
+    """Class for storing data we know (from the internet) about peaks."""
+
     Co60 = Source(
         [1173.288, 1332.492],
         [99.85, 99.9826])

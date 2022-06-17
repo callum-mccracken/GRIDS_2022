@@ -1,3 +1,4 @@
+"""Module for detecting / fitting peaks."""
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
@@ -7,10 +8,12 @@ from read_spe import data, Spectrum, CHANNELS
 from gaussians import comb_gauss
 from peak_data import known_peaks
 
+
 def integral(spectrum: Spectrum, range_tuple, step=1):
     """
-    Return the "integral" (sum * step size) of a spectrum,
-    over some range given by a tuple (start, stop).
+    Return the "integral" (sum * step size) of a spectrum.
+
+    Calculated over some range given by a tuple (start, stop).
 
     spectrum: Spectrum object, to be integrated
     range_tuple: tuple of numbers, (start, stop)
@@ -48,28 +51,27 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
     peak_width: peaks must have at least this width
     background_width: take this width on either side of each peak
     """
-
     # find peak points and properties (like width)
-    peaks, properties = find_peaks(
+    peak_chs, properties = find_peaks(
         spec.spectrum, prominence=peak_prominence, width=peak_width)
-    if len(peaks) < n_peaks:
-        print(peaks)
-        print(spec.spectrum[peaks])
+    if len(peak_chs) < n_peaks:
+        print(peak_chs)
+        print(spec.spectrum[peak_chs])
         raise ValueError(
-            f"Less peaks found than are required, {len(peaks)} < {n_peaks}. "
+            f"Less peaks found than are required {len(peak_chs)} < {n_peaks}. "
             "Try changing peak parameters like prominence and width.")
 
     # find the n_peaks highest peaks
     proms = properties["prominences"]
     best_indices = np.array((proms >= sorted(proms)[-n_peaks]), dtype=bool)
-    peaks = peaks[best_indices]
+    peak_chs = peak_chs[best_indices]
     properties = {k: properties[k][best_indices] for k in properties}
     # print("peaks before fitting: ", list(zip(peaks, spec.spectrum[peaks])))
 
     # now select background regions around peaks
     widths = properties["widths"]
     background_regions = []
-    for peak, width in zip(peaks, widths):
+    for peak, width in zip(peak_chs, widths):
         left = peak - 2*width
         right = peak + 2*width
         background_regions.append((left - background_width, left))
@@ -80,15 +82,15 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
 
     # and fit a sum of Gaussians to the peaks
     initial_guesses = []
-    for peak in peaks:
+    for peak in peak_chs:
         initial_guesses += [1000, peak, 10]
     coeff = np.polyfit(CHANNELS[mask_bkg], spec.spectrum[mask_bkg], 2)
     bkgfit = np.polyval(coeff, CHANNELS)
-    coeff_gauss, _ = curve_fit(
+    coeff_gauss, *_ = curve_fit(
         comb_gauss, CHANNELS, spec.spectrum-bkgfit, p0=initial_guesses)
     fit_hist = comb_gauss(CHANNELS, *coeff_gauss)
 
-    fit_peaks = coeff_gauss[[i*3+1 for i in range(len((peaks)))]]
+    fit_peaks = coeff_gauss[[i*3+1 for i in range(len((peak_chs)))]]
 
     # now plot if needed
     if plot:
@@ -101,8 +103,8 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
         for start, stop in background_regions:
             plt.axvspan(start, stop, alpha=0.1, color='m')
         plt.legend(fontsize=30)
-        plt.xlim(min(peaks) - 1.5*background_width,
-                 max(peaks) + 1.5*background_width)
+        plt.xlim(min(peak_chs) - 1.5*background_width,
+                 max(peak_chs) + 1.5*background_width)
         plt.savefig(f"images/peaks_{spec.name}.png")
         plt.cla()
         plt.clf()

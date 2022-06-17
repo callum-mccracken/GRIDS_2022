@@ -1,4 +1,4 @@
-"""module for reading data from .Spe files"""
+"""Module for reading data from .Spe files."""
 
 from dataclasses import dataclass
 import numpy as np
@@ -15,7 +15,7 @@ BKG_FILE = 'data/frun5_bkg_live5400s.Spe'
 
 
 def read(spe_filename):
-    """given a .Spe file, return the data as a numpy array"""
+    """Given a .Spe file, return the data as a numpy array."""
     with open(spe_filename, "r", encoding="utf-8") as spe_file:
         spe_lines = spe_file.readlines()
     data_lines = spe_lines[START_LINE:START_LINE+N_CHANNELS]
@@ -24,7 +24,7 @@ def read(spe_filename):
 
 
 def read_time(spe_filename):
-    """get live_time and real_time from a .Spe file"""
+    """Get live_time and real_time from a .Spe file."""
     with open(spe_filename, "r", encoding="utf-8") as spe_file:
         time_line = spe_file.readlines()[9]  # example: 245 245
         time_line = time_line.strip().replace("\n", "")
@@ -33,18 +33,20 @@ def read_time(spe_filename):
 
 
 def live_time(spe_filename):
-    """get live_time from a .Spe file"""
+    """Get live_time from a .Spe file."""
     return read_time(spe_filename)[0]
 
 
 def real_time(spe_filename):
-    """get live_time from a .Spe file"""
+    """Get live_time from a .Spe file."""
     return read_time(spe_filename)[1]
 
 
 class Spectrum():
     """Class for keeping track of spectrum names & data."""
+
     def __init__(self, name: str, label: str, filename: str) -> None:
+        """Create object by reading data from filename."""
         self.name = name
         self.label = label
         self.filename = filename
@@ -54,10 +56,13 @@ class Spectrum():
 
 @dataclass
 class SpeData():
+    """Class for storing data about spectra read from files."""
+
     Co60 = Spectrum("Co60", r'$^{60}Co$', CO60_FILE)
     Ba133 = Spectrum("Ba133", r'$^{133}Ba$', BA133_FILE)
     Na22 = Spectrum("Na22", r'$^{22}Na$', NA22_FILE)
     bkg = Spectrum("bkg", 'background', BKG_FILE)
     x = Spectrum("x", 'X', X_FILE)
+
 
 data = SpeData()

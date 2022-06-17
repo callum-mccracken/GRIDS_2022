@@ -1,7 +1,6 @@
-import numpy as np
+"""Module for storing Gaussian functions for fitting curves."""
 import warnings
-
-from read_spe import CHANNELS
+import numpy as np
 
 
 def gauss(xvals, amp, mean, var):
@@ -12,7 +11,7 @@ def gauss(xvals, amp, mean, var):
     mean: number, mean of Gaussian
     var: variance of Gaussian
     """
-    #suppress warnings
+    # suppress warnings
     warnings.filterwarnings('ignore')
 
     return amp*np.exp(-(xvals-mean)**2/(2*var))

@@ -1,3 +1,4 @@
+"""A module for dealing with activity calculations."""
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -5,12 +6,14 @@ from read_spe import data, Spectrum
 from energy_calibration import channel_from_energy
 from peak_data import known_peaks, Source
 
+
 def activity(spec: Spectrum, peak_channel, tol, plot=True):
+    """Calculate activity of the source from spec, in the given peak."""
     start = peak_channel - tol
     stop = peak_channel + tol
     bkg_integral = np.sum(data.bkg.spectrum[start:stop]/data.bkg.live_time)
     smp_integral = np.sum(spec.spectrum[start:stop]/spec.live_time)
-    peak_activity =  smp_integral - bkg_integral
+    peak_activity = smp_integral - bkg_integral
 
     if plot:
         plt.figure(figsize=(10, 10))
@@ -28,9 +31,13 @@ def activity(spec: Spectrum, peak_channel, tol, plot=True):
         plt.clf()
     return peak_activity
 
+
 class PeakActivities():
+    """Class for storing activities at peaks for a given source/spectrum."""
+
     def __init__(self, source: Source, spec: Spectrum,
                  tolerance=30, grams=None):
+        """Create object using peak energies from source."""
         self.source = source
         self.spec = spec
 
@@ -42,6 +49,7 @@ class PeakActivities():
         self.grams = grams
         self.activities_per_g = None if grams is None else activities/grams
 
+
 Co60 = PeakActivities(known_peaks.Co60, data.Co60)
 Ba133 = PeakActivities(known_peaks.Ba133, data.Ba133)
 Na22 = PeakActivities(known_peaks.Na22, data.Na22)
@@ -49,6 +57,5 @@ Na22 = PeakActivities(known_peaks.Na22, data.Na22)
 if __name__ == "__main__":
     for sample in [Co60, Ba133, Na22]:
         print(f"Activities for source {sample.spec.name} "
-            f"at energies {sample.source.peaks_kev} keV "
-            f"are: {sample.peak_activities}")
-
+              f"at energies {sample.source.peaks_kev} keV "
+              f"are: {sample.peak_activities}")

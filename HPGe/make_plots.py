@@ -1,10 +1,11 @@
+"""Module for storing plotting functions."""
 import matplotlib.pyplot as plt
-import numpy as np
 
 from read_spe import Spectrum, CHANNELS, data
 
+
 def make_normalized_plot(spectra, labels):
-    """make a normalized plot of all given spectra, using labels for legend"""
+    """Make a normalized plot of all given spectra, using labels for legend."""
     for spec, lab in zip(spectra, labels):
         plt.plot(spec/max(spec), label=lab)
     plt.legend()
@@ -14,7 +15,7 @@ def make_normalized_plot(spectra, labels):
 
 
 def plot_spectrum(spec: Spectrum, save=True):
-    """given a spe filename, make a plot -- either save or return the data"""
+    """Given a spe filename, make a plot -- either save or return the data."""
     plot_data = spec.spectrum
     output_filename = spec.filename.replace(".Spe", ".png")
     output_filename = output_filename.replace("data", "images")
@@ -32,19 +33,19 @@ def plot_spectrum(spec: Spectrum, save=True):
 
 
 if __name__ == "__main__":
-    spectra = [
+    specs = [
         data.Co60.spectrum,
         data.Ba133.spectrum,
         data.Na22.spectrum,
         data.x.spectrum,
         data.bkg.spectrum]
-    labels = [
+    labs = [
         data.Co60.label,
         data.Ba133.label,
         data.Na22.label,
         data.x.label,
         data.bkg.label]
-    make_normalized_plot(spectra, labels)
+    make_normalized_plot(specs, labs)
 
     plot_spectrum(data.Co60)
     plot_spectrum(data.Ba133)
