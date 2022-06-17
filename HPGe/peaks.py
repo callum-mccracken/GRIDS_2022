@@ -90,7 +90,8 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
         comb_gauss, CHANNELS, spec.spectrum-bkgfit, p0=initial_guesses)
     fit_hist = comb_gauss(CHANNELS, *coeff_gauss)
 
-    fit_peaks = coeff_gauss[[i*3+1 for i in range(len((peak_chs)))]]
+    fit_peaks = list(coeff_gauss[[i*3+1 for i in range(len((peak_chs)))]])
+    fit_stdevs = list(coeff_gauss[[i*3+2 for i in range(len((peak_chs)))]])
 
     # now plot if needed
     if plot:
@@ -108,16 +109,18 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
         plt.savefig(f"images/peaks_{spec.name}.png")
         plt.cla()
         plt.clf()
-    return list(fit_peaks)
+    return fit_peaks, fit_stdevs
 
 
-co_peak_channels = get_peaks(
+co_peak_channels, co_peak_stdevs = get_peaks(
     data.Co60, n_peaks=2, background_width=100, plot=True)
-ba_peak_channels = get_peaks(
+ba_peak_channels, ba_peak_stdevs = get_peaks(
     data.Ba133, n_peaks=5, background_width=70, plot=True)
 # ignore annihilation peak at 511keV, find 2 peaks and take 2nd one
-na_peak_channels = [get_peaks(
-    data.Na22, n_peaks=2, background_width=400, plot=True)[1]]
+na_peak_channels, na_peak_stdevs = get_peaks(
+    data.Na22, n_peaks=2, background_width=400, plot=True)
+na_peak_channels = [na_peak_channels[1]]
+na_peak_stdevs = [na_peak_stdevs[1]]
 
 # see which peaks correspond to which real peaks
 co_peak_energies = known_peaks.Co60.peaks_kev
