@@ -1,5 +1,6 @@
 """A module for dealing with activity calculations."""
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import numpy as np
 from inspect import cleandoc
 
@@ -7,6 +8,8 @@ from read_spe import data, Spectrum
 from energy_calibration import channel_from_energy, energy_from_channel
 from peak_data import known_peaks, Source
 import peaks
+
+plt.rcParams.update({'font.size': 22})
 
 
 def activity(spec: Spectrum, peak_channel, tol, plot=True):
@@ -108,16 +111,24 @@ fit_activities = np.polyval(act_line, activity_x_values)
 y_error = [real_co60_uncert]*2 + [real_ba133_uncert]*5 + [real_na22_uncert]*1
 
 plt.figure(figsize=(15, 15))
-plt.xlabel("calculated activity")
-plt.ylabel("real activity")
-plt.scatter(calc_activities, real_activities)
-plt.plot(activity_x_values, fit_activities)
-
+plt.xlabel("Measured Sum of Bin Counts")
+plt.ylabel("Activity [Bq]")
 plt.errorbar(
     calc_activities, real_activities,
     xerr=calc_act_uncerts, yerr=y_error,
     fmt='o', ecolor='k', color='k')
-plt.savefig("images/activity_calibration.png")
+
+co_patch = mpatches.Patch(color='g', label=data.Co60.label)
+ba_patch = mpatches.Patch(color='b', label=data.Ba133.label)
+na_patch = mpatches.Patch(color='r', label=data.Na22.label)
+colors = ['g']*2 + ['b']*5 + ['r']*1
+plt.plot(activity_x_values, fit_activities)
+plt.scatter(calc_activities, real_activities, s=100,
+            c=colors, marker="o", zorder=100, linewidths=5)
+
+plt.legend(handles=[co_patch, ba_patch, na_patch])
+
+plt.savefig("images/activity_calibration.png", dpi=300)
 plt.cla()
 plt.clf()
 
