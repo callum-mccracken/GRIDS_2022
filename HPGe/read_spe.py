@@ -1,11 +1,18 @@
+"""module for reading data from .Spe files"""
+
+from dataclasses import dataclass
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.signal import find_peaks
 
 N_CHANNELS = 8191
 START_LINE = 13
 
-BACKGROUND_FILE = "run3_background.Spe"
+CHANNELS = np.arange(0, N_CHANNELS, 1)
+CO60_FILE = 'data/frun3_co60_live180s.Spe'
+BA133_FILE = 'data/frun1_ba133_live180s.Spe'
+NA22_FILE = 'data/frun2_na22_live180s.Spe'
+X_FILE = 'data/frun4_source_live5400s.Spe'
+BKG_FILE = 'data/frun5_bkg_live5400s.Spe'
+
 
 def read(spe_filename):
     """given a .Spe file, return the data as a numpy array"""
@@ -16,50 +23,41 @@ def read(spe_filename):
     return np.array(data_nums)
 
 
-def plot(spe_filename: str, with_bkg=False, save=True, plot_peaks=True):
-    """given a spe filename, make a plot -- either save or return the data"""
-    data = read(spe_filename)
-    if with_bkg:
-        plot_data = data
-        output_filename = spe_filename.replace(".Spe", ".png")
-        xlabel = spe_filename+" channel number"
-    else:
-        plot_data = data - read(BACKGROUND_FILE)
-        output_filename = spe_filename.replace(".Spe", "_nobkg.png")
-        xlabel = spe_filename+" (bkg removed) channel number"
-    plt.ylabel("counts")
-    plt.plot(plot_data)
-    plt.xlabel(xlabel)
-
-    if plot_peaks:
-        peaks, properties = find_peaks(plot_data, prominence=100, width=1)
-        print(peaks)
-        plt.plot(peaks, plot_data[peaks], "x")
-        plt.vlines(x=peaks, ymin=plot_data[peaks] - properties["prominences"],
-                   ymax = plot_data[peaks], color = "C1")
-        plt.hlines(y=properties["width_heights"], xmin=properties["left_ips"],
-                   xmax=properties["right_ips"], color = "C1")
+def read_time(spe_filename):
+    """get live_time and real_time from a .Spe file"""
+    with open(spe_filename, "r", encoding="utf-8") as spe_file:
+        time_line = spe_file.readlines()[9]  # example: 245 245
+        time_line = time_line.strip().replace("\n", "")
+        live, real = map(int, time_line.split())
+    return live, real
 
 
-
-    if save:
-        plt.savefig(output_filename)
-        plt.cla(); plt.clf()
-    else:
-        return plot_data
+def live_time(spe_filename):
+    """get live_time from a .Spe file"""
+    return read_time(spe_filename)[0]
 
 
-
-if __name__ == "__main__":
-    # plot background
-    plot("run3_background.Spe", with_bkg=True)
-    # this one should be all zero
-    plot("run3_background.Spe")
-    # plot other isotopes
-    plot("run2_co60.Spe")
-    plot("run4_ba133.Spe")
-    plot("run5_na22.Spe")
-    plot("run6_mistery_source.Spe")
+def real_time(spe_filename):
+    """get live_time from a .Spe file"""
+    return read_time(spe_filename)[1]
 
 
+class Spectrum():
+    """Class for keeping track of spectrum names & data."""
+    def __init__(self, name: str, label: str, filename: str) -> None:
+        self.name = name
+        self.label = label
+        self.filename = filename
+        self.spectrum = read(self.filename)
+        self.live_time = live_time(self.filename)
 
+
+@dataclass
+class SpeData():
+    Co60 = Spectrum("Co60", r'$^{60}Co$', CO60_FILE)
+    Ba133 = Spectrum("Ba133", r'$^{133}Ba$', BA133_FILE)
+    Na22 = Spectrum("Na22", r'$^{22}Na$', NA22_FILE)
+    bkg = Spectrum("bkg", 'background', BKG_FILE)
+    x = Spectrum("x", 'X', X_FILE)
+
+data = SpeData()
