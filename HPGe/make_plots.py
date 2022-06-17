@@ -19,7 +19,7 @@ def plot_spectrum(spec: Spectrum, save=True):
     plot_data = spec.spectrum
     output_filename = spec.filename.replace(".Spe", ".png")
     output_filename = output_filename.replace("data", "images")
-    xlabel = spec.filename+" Energy [keV]"
+    xlabel = spec.filename+" channel number"
     plt.ylabel("counts")
     plt.plot(CHANNELS, plot_data)
     plt.xlabel(xlabel)
