@@ -31,7 +31,7 @@ def activity(spec: Spectrum, peak_channel, tol, plot=True):
         plt.xlim(start, stop)
         plt.legend(fontsize=30)
         output_filename = spec.filename.replace(
-            ".Spe", f"_peak_{peak_channel}.png")
+            ".Spe", f"_peak_{peak_channel}.pdf")
         output_filename = output_filename.replace(
             "data", "images")
         plt.savefig(output_filename)
@@ -128,7 +128,7 @@ plt.scatter(calc_activities, real_activities, s=100,
 
 plt.legend(handles=[co_patch, ba_patch, na_patch])
 
-plt.savefig("images/activity_calibration.png", dpi=300)
+plt.savefig("images/activity_calibration.pdf")
 plt.cla()
 plt.clf()
 

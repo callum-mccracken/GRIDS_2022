@@ -54,7 +54,7 @@ if __name__ == "__main__":
 
     plt.legend(handles=[co_patch, ba_patch, na_patch])
 
-    plt.savefig("images/energy_calibration.png", dpi=300)
+    plt.savefig("images/energy_calibration.pdf")
     plt.cla()
     plt.clf()
 

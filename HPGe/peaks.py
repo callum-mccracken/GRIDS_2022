@@ -111,7 +111,7 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
         plt.xlim(min(peak_chs) - 1.5*background_width,
                  max(peak_chs) + 1.5*background_width)
         plt.tight_layout()
-        plt.savefig(f"images/peaks_{spec.name}.png", dpi=300)
+        plt.savefig(f"images/peaks_{spec.name}.pdf")
         plt.cla()
         plt.clf()
     return fit_peaks, fit_stdevs

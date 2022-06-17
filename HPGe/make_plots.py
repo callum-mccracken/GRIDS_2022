@@ -9,7 +9,7 @@ def make_normalized_plot(spectra, labels):
     for spec, lab in zip(spectra, labels):
         plt.plot(spec/max(spec), label=lab)
     plt.legend()
-    plt.savefig("images/all_spectra_normalized.png")
+    plt.savefig("images/all_spectra_normalized.pdf")
     plt.cla()
     plt.clf()
 
@@ -17,7 +17,7 @@ def make_normalized_plot(spectra, labels):
 def plot_spectrum(spec: Spectrum, save=True):
     """Given a spe filename, make a plot -- either save or return the data."""
     plot_data = spec.spectrum
-    output_filename = spec.filename.replace(".Spe", ".png")
+    output_filename = spec.filename.replace(".Spe", ".pdf")
     output_filename = output_filename.replace("data", "images")
     xlabel = spec.filename+" channel number"
     plt.ylabel("counts")
