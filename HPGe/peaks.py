@@ -129,6 +129,8 @@ na_peak_energies = known_peaks.Na22.peaks_kev
 
 peak_channels = co_peak_channels + ba_peak_channels + na_peak_channels
 peak_energies = co_peak_energies + ba_peak_energies + na_peak_energies
+peak_stdevs = co_peak_stdevs + ba_peak_stdevs + na_peak_stdevs
+
 
 # to be used in energy_calibration.py
 peaks = [(chan, energy) for chan, energy in zip(peak_channels, peak_energies)]

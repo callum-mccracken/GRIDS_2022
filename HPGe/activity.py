@@ -1,8 +1,8 @@
 """A module for dealing with activity calculations."""
+from inspect import cleandoc
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
-from inspect import cleandoc
 
 from read_spe import data, Spectrum
 from energy_calibration import channel_from_energy, energy_from_channel
