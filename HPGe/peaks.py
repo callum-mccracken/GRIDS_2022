@@ -8,6 +8,8 @@ from read_spe import data, Spectrum, CHANNELS
 from gaussians import comb_gauss
 from peak_data import known_peaks
 
+plt.rcParams.update({'font.size': 30})
+
 
 def integral(spectrum: Spectrum, range_tuple, step=1):
     """
@@ -96,8 +98,10 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
     # now plot if needed
     if plot:
         plt.figure(figsize=(50, 10))
+        plt.xlabel("Channel Number")
+        plt.ylabel("Counts")
         plt.plot(CHANNELS, spec.spectrum, label=spec.label)
-        plt.plot(CHANNELS, bkgfit, label='background fit')
+        plt.plot(CHANNELS, bkgfit, label='Background fit')
         plt.plot(CHANNELS, fit_hist, label='Gaussian peak fit')
         for peak in fit_peaks:
             plt.axvline(peak, c='r')
@@ -106,7 +110,8 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
         plt.legend(fontsize=30)
         plt.xlim(min(peak_chs) - 1.5*background_width,
                  max(peak_chs) + 1.5*background_width)
-        plt.savefig(f"images/peaks_{spec.name}.png")
+        plt.tight_layout()
+        plt.savefig(f"images/peaks_{spec.name}.png", dpi=300)
         plt.cla()
         plt.clf()
     return fit_peaks, fit_stdevs
@@ -129,6 +134,8 @@ na_peak_energies = known_peaks.Na22.peaks_kev
 
 peak_channels = co_peak_channels + ba_peak_channels + na_peak_channels
 peak_energies = co_peak_energies + ba_peak_energies + na_peak_energies
+peak_stdevs = co_peak_stdevs + ba_peak_stdevs + na_peak_stdevs
+
 
 # to be used in energy_calibration.py
 peaks = [(chan, energy) for chan, energy in zip(peak_channels, peak_energies)]

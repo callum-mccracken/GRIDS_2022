@@ -1,12 +1,15 @@
 """A module for dealing with activity calculations."""
-import matplotlib.pyplot as plt
-import numpy as np
 from inspect import cleandoc
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
 
 from read_spe import data, Spectrum
 from energy_calibration import channel_from_energy, energy_from_channel
 from peak_data import known_peaks, Source
 import peaks
+
+plt.rcParams.update({'font.size': 22})
 
 
 def activity(spec: Spectrum, peak_channel, tol, plot=True):
@@ -77,6 +80,10 @@ na22_current_act = current_activity(37e3, 762, 2.6018*365)
 co60_current_act = current_activity(3.7e5, 16390, 1925.28)
 ba133_current_act = current_activity(3.81e5, 6925, 10.551*365)
 
+real_na22_uncert = 0.2 * na22_current_act
+real_co60_uncert = 0.03 * co60_current_act
+real_ba133_uncert = 0.03 * ba133_current_act
+
 real_na22_acts = list(
     na22_current_act * np.array(known_peaks.Na22.intensities))
 real_ba133_acts = list(
@@ -88,20 +95,40 @@ calc_na22_acts = list(Na22.calc_peak_activities)
 calc_ba133_acts = list(Ba133.calc_peak_activities)
 calc_co60_acts = list(Co60.calc_peak_activities)
 
+na22_act_uncert = list(Na22.uncertainties)
+ba133_act_uncert = list(Ba133.uncertainties)
+co60_act_uncert = list(Co60.uncertainties)
+
 real_activities = real_co60_acts + real_ba133_acts + real_na22_acts
 calc_activities = calc_co60_acts + calc_ba133_acts + calc_na22_acts
+calc_act_uncerts = co60_act_uncert + ba133_act_uncert + na22_act_uncert
 
 # need real = line(calculated)
 act_line = np.polyfit(calc_activities, real_activities, deg=1)
 activity_x_values = np.arange(min(calc_activities), max(calc_activities), 1)
 fit_activities = np.polyval(act_line, activity_x_values)
 
+y_error = [real_co60_uncert]*2 + [real_ba133_uncert]*5 + [real_na22_uncert]*1
+
 plt.figure(figsize=(15, 15))
-plt.xlabel("calculated activity")
-plt.ylabel("real activity")
-plt.scatter(calc_activities, real_activities)
+plt.xlabel("Measured Sum of Bin Counts")
+plt.ylabel("Activity [Bq]")
+plt.errorbar(
+    calc_activities, real_activities,
+    xerr=calc_act_uncerts, yerr=y_error,
+    fmt='o', ecolor='k', color='k')
+
+co_patch = mpatches.Patch(color='g', label=data.Co60.label)
+ba_patch = mpatches.Patch(color='b', label=data.Ba133.label)
+na_patch = mpatches.Patch(color='r', label=data.Na22.label)
+colors = ['g']*2 + ['b']*5 + ['r']*1
 plt.plot(activity_x_values, fit_activities)
-plt.savefig("images/activity_calibration.png")
+plt.scatter(calc_activities, real_activities, s=100,
+            c=colors, marker="o", zorder=100, linewidths=5)
+
+plt.legend(handles=[co_patch, ba_patch, na_patch])
+
+plt.savefig("images/activity_calibration.png", dpi=300)
 plt.cla()
 plt.clf()
 
