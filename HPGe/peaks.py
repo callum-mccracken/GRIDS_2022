@@ -8,6 +8,8 @@ from read_spe import data, Spectrum, CHANNELS
 from gaussians import comb_gauss
 from peak_data import known_peaks
 
+plt.rcParams.update({'font.size': 30})
+
 
 def integral(spectrum: Spectrum, range_tuple, step=1):
     """
@@ -90,13 +92,16 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
         comb_gauss, CHANNELS, spec.spectrum-bkgfit, p0=initial_guesses)
     fit_hist = comb_gauss(CHANNELS, *coeff_gauss)
 
-    fit_peaks = coeff_gauss[[i*3+1 for i in range(len((peak_chs)))]]
+    fit_peaks = list(coeff_gauss[[i*3+1 for i in range(len((peak_chs)))]])
+    fit_stdevs = list(coeff_gauss[[i*3+2 for i in range(len((peak_chs)))]])
 
     # now plot if needed
     if plot:
         plt.figure(figsize=(50, 10))
+        plt.xlabel("Channel Number")
+        plt.ylabel("Counts")
         plt.plot(CHANNELS, spec.spectrum, label=spec.label)
-        plt.plot(CHANNELS, bkgfit, label='background fit')
+        plt.plot(CHANNELS, bkgfit, label='Background fit')
         plt.plot(CHANNELS, fit_hist, label='Gaussian peak fit')
         for peak in fit_peaks:
             plt.axvline(peak, c='r')
@@ -105,19 +110,22 @@ def get_peaks(spec: Spectrum, n_peaks=1, peak_prominence=100, peak_width=5,
         plt.legend(fontsize=30)
         plt.xlim(min(peak_chs) - 1.5*background_width,
                  max(peak_chs) + 1.5*background_width)
-        plt.savefig(f"images/peaks_{spec.name}.png")
+        plt.tight_layout()
+        plt.savefig(f"images/peaks_{spec.name}.pdf")
         plt.cla()
         plt.clf()
-    return list(fit_peaks)
+    return fit_peaks, fit_stdevs
 
 
-co_peak_channels = get_peaks(
+co_peak_channels, co_peak_stdevs = get_peaks(
     data.Co60, n_peaks=2, background_width=100, plot=True)
-ba_peak_channels = get_peaks(
+ba_peak_channels, ba_peak_stdevs = get_peaks(
     data.Ba133, n_peaks=5, background_width=70, plot=True)
 # ignore annihilation peak at 511keV, find 2 peaks and take 2nd one
-na_peak_channels = [get_peaks(
-    data.Na22, n_peaks=2, background_width=400, plot=True)[1]]
+na_peak_channels, na_peak_stdevs = get_peaks(
+    data.Na22, n_peaks=2, background_width=400, plot=True)
+na_peak_channels = [na_peak_channels[1]]
+na_peak_stdevs = [na_peak_stdevs[1]]
 
 # see which peaks correspond to which real peaks
 co_peak_energies = known_peaks.Co60.peaks_kev
@@ -126,6 +134,8 @@ na_peak_energies = known_peaks.Na22.peaks_kev
 
 peak_channels = co_peak_channels + ba_peak_channels + na_peak_channels
 peak_energies = co_peak_energies + ba_peak_energies + na_peak_energies
+peak_stdevs = co_peak_stdevs + ba_peak_stdevs + na_peak_stdevs
+
 
 # to be used in energy_calibration.py
 peaks = [(chan, energy) for chan, energy in zip(peak_channels, peak_energies)]
